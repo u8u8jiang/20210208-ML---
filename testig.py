@@ -50,34 +50,101 @@ with open('Account info.csv', 'w', newline='',encoding="utf-8") as csvfile:
                    account.followed_by_count, account.follows_count,
                    account.is_private, account.is_verified])
 
+#==========================================================#
+
+from igramscraper.instagram import Instagram 
+
+proxies = {
+    '192.168.43.249'
+}
+
+instagram = Instagram()
+instagram.set_proxies(proxies)
+
+account = instagram.get_account('itsgeenatime')
+
+# Available fields
+print('Account info:')
+print('Id: ', account.identifier)
+print('Username: ', account.username)
+print('Full name: ', account.full_name)
+print('Biography: ', account.biography)
+print('Profile pic url: ', account.get_profile_picture_url())
+print('External Url: ', account.external_url)
+print('Number of published posts: ', account.media_count)
+print('Number of followers: ', account.followed_by_count)
+print('Number of follows: ', account.follows_count)
+print('Is private: ', account.is_private)
+print('Is verified: ', account.is_verified)
+
+# or simply for printing use 
+print(account)
+
+
+
+#==========================================================#
+
+
+
+# 爬取IG貼文短連結
+# https://medium.com/marketingdatascience/%E8%B7%9F%E8%91%97ig%E6%BD%AE%E6%B5%81%E4%BE%86%E7%88%AC%E8%9F%B2-%E5%A6%82%E4%BD%95%E7%88%AC%E5%8F%96ig%E8%B2%BC%E6%96%87%E7%9F%AD%E9%80%A3%E7%B5%90-%E7%B3%BB%E5%88%972-%E9%99%84python%E7%A8%8B%E5%BC%8F%E7%A2%BC-465b7f00eeee
 
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup as Soup
 import time
 
-browser = webdriver.Chrome()  
-url = 'https://www.instagram.com/jjr_yaya/'
+
+options = Options()
+options.binary_location = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+browser = webdriver.Chrome(chrome_options = options, executable_path=r'C:\\Users\\she84\\anaconda3\\chromedriver.exe')
+url = 'https://www.instagram.com/itsgeenatime/'
 browser.get(url) # 前往該網址
 
 
+# 往下滑並取得新的貼文連結
+n_scroll = 5
+post_url = []
+for i in range(n_scroll):
+    scroll = 'window.scrollTo(0, document.body.scrollHeight);'
+    browser.execute_script(scroll)
+    html = browser.page_source
+    soup = Soup(html, 'lxml')
+
+    # 尋找所有的貼文連結
+    for elem in soup.select('article div div div div a'):
+        # 如果新獲得的貼文連結不在列表裡，則加入
+        if elem['href'] not in post_url:
+            post_url.append(elem['href'])
+    time.sleep(2) # 等待網頁加載
+
+# 總共加載的貼文連結數
+print("總共取得 " + str(len(post_url)) + " 篇貼文連結")
+
+
+#==========================================================#
 
 
 
-
-
-
-
+# 開始爬取貼文讚數及留言數
+# https://aitmr1234567890.medium.com/%E8%B7%9F%E8%91%97ig%E6%BD%AE%E6%B5%81%E4%BE%86%E7%88%AC%E8%9F%B2-%E5%A6%82%E4%BD%95%E7%88%AC%E5%8F%96ig%E8%B2%BC%E6%96%87%E8%AE%9A%E6%95%B8-%E7%95%99%E8%A8%80%E6%95%B8-%E7%B3%BB%E5%88%973-%E9%99%84python%E7%A8%8B%E5%BC%8F%E7%A2%BC-4ac918b8fef4
 
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 
+
 # 進入到粉專的頁面
-# browser = webdriver.Chrome()  
-url = 'https://www.instagram.com/jjr_yaya/'
+
+options = Options()
+options.binary_location = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+browser = webdriver.Chrome(chrome_options = options, executable_path=r'C:\\Users\\she84\\anaconda3\\chromedriver.exe')
+url = 'https://www.instagram.com/itsgeenatime/'
 browser.get(url) # 前往該網址
 
-# post_url = '/p/CEriQnOMwW9/'
-post_url = 'p/CJiw6v4MXTkuXmZthbXdXJRadDeG8NKhfg5-9k0/'
+post_url = 'p/CLPHcMqjv8j/'
+
+
+
 find = False
 # 不在目前的網頁元素裡，則往下滑，加載新貼文
 while not find:
@@ -99,19 +166,5 @@ while not find:
         browser.execute_script(scroll)
         continue
         
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
